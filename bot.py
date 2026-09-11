@@ -8,8 +8,7 @@ logging.basicConfig(level=logging.INFO)
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # የቻናሉን ወይም የቦቱን ስም ከግሩሙ ሰላምታ ጋር ማሳየት
-    chat_title = update.effective_chat.title if update.effective_chat and update.effective_chat.title else "ወደዚህ የቴሌግራም ገጽ"
+    chat_title = update.effective_chat.title if update.effective_chat and update.effective_chat.title else "ወደዚህ ቻናል"
     
     welcome_message = (
         f"🌟 ሰላም! እንኳን ወደ **{chat_title}** በሰላም መጣችሁ! 🎉\n\n"
@@ -31,6 +30,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
     
+    # ይህ ትዕዛዝ በግሩፕም ሆነ በግል ቻት እንዲሰራ ያስችለዋል
     app.add_handler(CommandHandler("start", start))
     
     app.run_polling()
