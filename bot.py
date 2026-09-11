@@ -4,11 +4,10 @@ from telegram import Update
 from telegram.ext import Application, MessageHandler, ContextTypes, filters
 from openai import OpenAI
 
-# ሎጊንግ ማስተካከል
 logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") # የ OpenAI ኪ ከ Render Environment Variables ይነበባል
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # የ OpenAI ክላይንት ማዋቀር
 client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
@@ -20,7 +19,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     chat_title = update.effective_chat.title if update.effective_chat and update.effective_chat.title else "ወደዚህ ቻናል"
     
-    # 1. OpenAI ካለ ተጠቃሚው ለጠየቀው ጥያቄ አጭር እና ጥራት ያለው መልስ ማመንጨት
     ai_response = ""
     if client:
         try:
@@ -36,10 +34,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             logging.error(f"OpenAI Error: {e}")
 
-    # 2. የሁለቱን አፕሊኬሽኖች ማስታወቂያ እና ሊንኮች ማዘጋጀት
-    promo_message = (
+    # መልእክቱን ማቀናጀት
+    if ai_response:
+        intro_text = f"🤖 **የ AI መልስ:** {ai_response}\n\n"
+    else:
+        intro_text = ""
+
+    welcome_message = (
         f"🌟 ሰላም! እንኳን ወደ **{chat_title}** በሰላም መጣችሁ! 🎉\n\n"
-        f"{ai_response}\n\n" if ai_response else f"🌟 ሰላም! እንኳን ወደ **{chat_title}** በሰላም መጣችሁ! 🎉\n\n"
+        f"{intro_text}"
         "እዚህ በመገኘዎ እጅግ ደስ ብሎናል። ከዛሬ ጀምሮ አንድ ቤተሰብ ሆነን፣ በጋራ በመተጋገዝ ስኬታማ ጉዞን እናስተካክላለን! 🤝✨\n\n"
         "📱 **ኦንላይን በመቀመጥ ብቻ ገቢ የሚያስገኙ ድንቅ መድረኮች፦**\n\n"
         "━━━━━━━━━━━━━━━━━━━━━\n"
@@ -54,12 +57,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "⚠️ **ማሳሰቢያ፦** መተግበሪያዎቹን ሲጠቀሙ የተሰጡትን የኢንቫይት ኮዶች (Invite Codes) መጠቀምዎን አይርሱ! መልካም የስራ ጊዜ ይሁንልዎ! 🚀 ኩባንያችን ከጎንዎ ነው።"
     )
     
-    await update.message.reply_text(promo_message, parse_mode="Markdown")
+    await update.message.reply_text(welcome_message, parse_mode="Markdown")
 
 def main():
     app = Application.builder().token(BOT_TOKEN).build()
     
-    # ማንኛውንም የጽሑፍ መልእክት በመቀበል ሃንድለር ማካተት
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     app.run_polling()
